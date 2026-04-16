@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>Rutas — Casa Médica</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:1rem;min-height:100vh;background:#fff}
+.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1rem 1.25rem;margin-bottom:.75rem}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid #e8e8e8}
+.hdr h2{font-size:17px;font-weight:600;flex:1;color:#1a1a1a}
+.back{background:none;border:none;cursor:pointer;font-size:22px;color:#666;padding:0;line-height:1}
+label{font-size:12px;color:#666;margin-bottom:4px;display:block;margin-top:.75rem}
+label:first-child{margin-top:0}
+select,input[type=text],input[type=number],textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:#1a1a1a;-webkit-appearance:none;appearance:none}
+select:focus,input:focus,textarea:focus{outline:none;border-color:#378ADD}
+textarea{min-height:70px;resize:vertical}
+.btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:.5rem;border:none;font-family:inherit}
+.btn-p{background:#1a1a1a;color:#fff}.btn-p:active{background:#333}
+.btn-s{background:#f0f0f0;color:#1a1a1a}.btn-s:active{background:#e0e0e0}
+.btn-green{background:#1D9E75;color:#fff}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem}
+.met{background:#f7f7f7;border-radius:10px;padding:.75rem 1rem}
+.met .n{font-size:24px;font-weight:700;color:#1a1a1a}
+.met .l{font-size:11px;color:#888;margin-top:2px}
+.alert-box{background:#FFEBEE;border:1px solid #FFCDD2;border-radius:10px;padding:.85rem;margin-bottom:.75rem;font-size:13px;color:#C62828}
+.kmbox{background:#f7f7f7;border-radius:10px;padding:1rem;text-align:center;margin:.5rem 0}
+.kmn{font-size:32px;font-weight:700;color:#1a1a1a}
+.kml{font-size:12px;color:#888;margin-top:4px}
+.parada-card{background:#fff;border:1px solid #e8e8e8;border-left:4px solid #378ADD;border-radius:0 12px 12px 0;padding:.85rem 1.1rem;margin-bottom:.5rem}
+.loading{text-align:center;padding:2.5rem 1rem;color:#888;font-size:14px}
+.spinner{width:28px;height:28px;border:3px solid #e8e8e8;border-top-color:#378ADD;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:6px}
+.sec-ttl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 8px}
+.row-data{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.row-data:last-child{border-bottom:none}
+.logo{font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:-.5px}
+.logo span{color:#1D9E75}
+.add-btn{background:none;border:1px dashed #ddd;border-radius:8px;width:100%;padding:10px;font-size:14px;color:#666;cursor:pointer;margin-bottom:.5rem;font-family:inherit}
+.home-card{background:#fff;border:1px solid #e8e8e8;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:.65rem;cursor:pointer;display:flex;align-items:center;gap:14px}
+.home-card:active{background:#f5f5f5}
+.av{width:40px;height:40px;border-radius:50%;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1565C0;flex-shrink:0}
+.pn{font-size:14px;font-weight:600;color:#1a1a1a}
+.ps{font-size:12px;color:#888;margin-top:2px}
+.tabs{display:flex;gap:6px;margin-bottom:1rem}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;border:1px solid #e8e8e8;border-radius:8px;cursor:pointer;color:#888;background:#fff;font-family:inherit}
+.tab.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.success-icon{width:64px;height:64px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:28px;color:#1D9E75}
+.chart-wrap{position:relative;width:100%;margin-bottom:1rem}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:.5rem;font-size:12px;color:#666}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+/* checkbox list */
+.chk-list{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px}
+.chk-item{display:flex;align-items:center;gap:6px;font-size:13px;padding:4px 2px}
+.chk-item input{width:16px;height:16px;flex-shrink:0;accent-color:#378ADD}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div style="padding:1.5rem 0 1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <div class="logo">Casa<span>Médica</span></div>
+      <span style="font-size:12px;color:#888"><span class="conn-dot"></span>En línea</span>
+    </div>
+    <p style="font-size:13px;color:#888;margin-bottom:1.25rem">App de Rutas — Cirugía & Quirófano</p>
+    <div class="home-card" onclick="go('s-dashboard')">
+      <div class="av" style="background:#FFF3E0;color:#E65100">CO</div>
+      <div><div class="pn">Coordinador</div><div class="ps">Dashboard · gráficas · anomalías</div></div>
+    </div>
+    <div class="home-card" onclick="cargarPilotos()">
+      <div class="av">PP</div>
+      <div><div class="pn">Piloto</div><div class="ps">Registrar ruta y kilometraje</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="s-dashboard">
+  <div class="hdr"><button class="back" onclick="go('s-home')">←</button><h2>Dashboard en vivo</h2></div>
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab(this,'t-resumen')">Resumen</button>
+    <button class="tab" onclick="switchTab(this,'t-pilotos')">Por piloto</button>
+    <button class="tab" onclick="switchTab(this,'t-tipos')">Anomalías</button>
+  </div>
+  <div id="t-resumen"><div class="loading"><div class="spinner"></div>Cargando datos reales...</div></div>
+  <div id="t-pilotos" style="display:none">
+    <div class="card" style="margin-bottom:.75rem">
+      <label style="margin-top:0">Piloto</label>
+      <select id="sel-piloto-dash" onchange="cargarDetallePiloto()">
+        <option value="">Selecciona un piloto...</option>
+        <option>Oliver Quiñonez</option>
+        <option>Lesster González</option>
+      </select>
+    </div>
+    <div id="piloto-detalle"><p style="font-size:13px;color:#888;text-align:center;padding:1.5rem">Selecciona un piloto para ver su detalle.</p></div>
+  </div>
+  <div id="t-tipos" style="display:none"><div class="loading"><div class="spinner"></div>Cargando anomalías...</div></div>
+</div>
+
+<!-- PILOTO HOME -->
+<div class="screen" id="s-piloto-home">
+  <div class="hdr"><button class="back" onclick="go('s-home')">←</button><h2>Registrar ruta</h2></div>
+  <div class="card">
+    <label>Tu nombre</label>
+    <select id="sel-piloto">
+      <option value="">Selecciona...</option>
+      <option>Oliver Quiñonez</option>
+      <option>Lesster González</option>
+    </select>
+    <label style="margin-top:1rem">Agregar piloto nuevo</label>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input type="text" id="nuevo-piloto" placeholder="Nombre completo" style="flex:1">
+      <button onclick="agregarPiloto()" style="padding:10px 14px;border-radius:8px;border:1px solid #ddd;background:#f0f0f0;cursor:pointer;font-size:14px;font-weight:600">+</button>
+    </div>
+  </div>
+  <button class="btn btn-p" onclick="iniciarRuta()">Iniciar ruta →</button>
+</div>
+
+<!-- FORM RUTA -->
+<div class="screen" id="s-form-ruta">
+  <div class="hdr"><button class="back" onclick="go('s-piloto-home')">←</button><h2 id="titulo-ruta">Nueva ruta</h2></div>
+  <div class="card">
+    <label>Km odómetro de salida</label>
+    <div class="kmbox">
+      <div class="kmn" id="km-sug">—</div>
+      <div class="kml">Último registrado — confirma o corrige abajo</div>
+    </div>
+    <input type="number" id="km-ini" placeholder="Corregir si es diferente">
+    <label style="margin-top:.75rem">Hora de salida</label>
+    <input type="text" id="hora-sal" placeholder="Ej: 8:15am">
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <span class="sec-ttl" style="margin:0">Paradas de la ruta</span>
+  </div>
+  <div id="paradas-container"></div>
+  <button class="add-btn" onclick="agregarParada()">+ Agregar parada</button>
+  <div class="card">
+    <label style="margin-top:0">Km odómetro de regreso</label>
+    <input type="number" id="km-fin" placeholder="Ej: 23724" oninput="calcKm()">
+    <div class="kmbox" style="margin-top:.5rem">
+      <div class="kmn" id="km-calc">— km</div>
+      <div class="kml">Km recorridos en esta ruta</div>
+    </div>
+    <label>Comentarios del apoyo administrativo</label>
+    <textarea id="comentarios" placeholder="Observaciones generales..."></textarea>
+  </div>
+  <button class="btn btn-green" id="btn-enviar" onclick="enviarRuta()">Enviar y cerrar ruta</button>
+  <div id="enviando" style="display:none" class="loading"><div class="spinner"></div>Guardando en Google Sheets...</div>
+</div>
+
+<!-- CONFIRMACIÓN -->
+<div class="screen" id="s-ok">
+  <div style="text-align:center;padding:3rem 1rem">
+    <div class="success-icon">✓</div>
+    <h2 style="font-size:20px;margin-bottom:.5rem">Ruta guardada</h2>
+    <p style="font-size:15px;color:#888;margin-bottom:.25rem" id="conf-km"></p>
+    <p style="font-size:13px;color:#aaa;margin-bottom:2.5rem">Registrada en Google Sheets.</p>
+    <button class="btn btn-p" onclick="go('s-piloto-home')" style="margin-bottom:.5rem">Registrar otra ruta</button>
+    <button class="btn btn-s" onclick="go('s-home')">Salir</button>
+  </div>
+</div>
+
+</div>
+
+<!-- TEMPLATE PARADA -->
+<template id="tpl-parada">
+  <div class="parada-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+      <span style="font-size:12px;font-weight:600;color:#888">PARADA <span class="p-num"></span></span>
+      <button onclick="this.closest('.parada-card').remove();renumerar()" style="background:none;border:none;cursor:pointer;font-size:22px;color:#aaa;line-height:1;padding:0">×</button>
+    </div>
+    <label style="margin-top:0">Recolección (origen)</label>
+    <select class="p-recol">
+      <option value="">Selecciona...</option>
+      <option>Oficina - Zona 10</option>
+      <option>Servicio Biomédico</option>
+      <option>Cortijo</option>
+      <option>Bancos</option>
+      <option>Librería</option>
+      <option>Dollarcity</option>
+      <option>SV. Zona 10</option>
+      <option>SV. Zona 1</option>
+      <option>SV. MetroNorte</option>
+      <option>SV. Galerías Prima</option>
+      <option>SV. Metroplaza</option>
+      <option>SV. Bluplaza</option>
+      <option>SV. El frutal</option>
+      <option>Doctores Privados</option>
+      <option>Otro</option>
+    </select>
+    <label>Destinatario</label>
+    <select class="p-dest">
+      <option value="">Selecciona...</option>
+      <option>GUATEX</option>
+      <option>CENTRO MÉDICO MILITAR</option>
+      <option>HOSPITAL HERRERA LLERANDI</option>
+      <option>HOSPITAL ESPERANZA</option>
+      <option>VIDEOLAP</option>
+      <option>HOSPITAL EL PILAR</option>
+      <option>HOSPITAL YARDEN</option>
+      <option>INCAN</option>
+      <option>UNICAR</option>
+      <option>HOSPITAL ROOSEVELT</option>
+      <option>HOSPITAL SAN JUAN DE DIOS</option>
+      <option>UNOP</option>
+      <option>UNOPS</option>
+      <option>HOSPITAL JORDAN</option>
+      <option>HOSPITAL MARANATHA</option>
+      <option>HOSPITAL BONANOVA</option>
+      <option>IGSS, HOSPITAL GENERAL DE ENFERMEDADES</option>
+      <option>CENTRO MÉDICO</option>
+      <option>GASTRO EXPERTOS</option>
+      <option>HOSPITAL VILLA NUEVA</option>
+      <option>IGSS, GINECO</option>
+      <option>IGSS, BERMEJO</option>
+      <option>IGSS, CEIBAL</option>
+      <option>IGSS, CAMIP BARRANQUILLA</option>
+      <option>IGSS, CAMIP ZUNIL</option>
+      <option>IGSS, PAMPLONA</option>
+      <option>IGSS, PERIFERICA ZONA 11</option>
+      <option>IGSS, PERIFERICA ZONA 5</option>
+      <option>IGSS, GERONA</option>
+      <option>HOSPITAL MIRAFLORES, ZONA 10</option>
+      <option>UROGOLOGÍA INTEGRAL</option>
+      <option>MEDIKA 10</option>
+      <option>DESIGN CENTER</option>
+      <option>SERMESA, CAES</option>
+      <option>SERMESA, ZONA 10</option>
+      <option>SERMESA, ZONA 14</option>
+      <option>SERMEZA, ZONA 11 NOVICENTRO</option>
+      <option>SERMESA, BODEGA CENTRAL</option>
+      <option>SERMESA, ESKALA</option>
+      <option>ZONA PEDIÁTRICA</option>
+      <option>RENOVATI</option>
+      <option>HOSPITAL EL NARANJO</option>
+      <option>HOSPITAL MULTIMÉDICA</option>
+      <option>SIXTINO I</option>
+      <option>SIXTINO II</option>
+      <option>HOSPITAL MIRAFLORES, ZONA 11</option>
+      <option>SANATORIO HERMANO PEDRO ZONA 11</option>
+      <option>HOSPITAL BELLA VIDA</option>
+      <option>ALTRAMEDIC</option>
+      <option>ORTOVET</option>
+      <option>OFICINAS CENTRALES DEL IGSS</option>
+      <option>SERVICIO BIOMÉDICO</option>
+      <option>CORTIJO</option>
+      <option>HOSPITAL ANGELES</option>
+      <option>HOSPITAL ALAMOS</option>
+      <option>NEW LIFE</option>
+      <option>CASA - DOCTOR(A)</option>
+      <option>HUB REFORMA</option>
+      <option>EDIFICIO LAS BRISAS</option>
+      <option>SV - ZONA 1</option>
+      <option>SV - ZONA 10</option>
+      <option>SV - GALERÍAS</option>
+      <option>SV - METRONORTE</option>
+      <option>SV - METROPLAZA</option>
+      <option>A TU ORIGEN</option>
+      <option>TIKAL FUTURA</option>
+      <option>CARITAS ARQUIDIOCESANA</option>
+      <option>COLONIA TIKAL</option>
+      <option>OFICINAS CENTRALES, ZONA 10</option>
+      <option>EVENTOS CATÓLICOS</option>
+      <option>GASTRO INTEGRAL</option>
+      <option>GASTRO, S.A.</option>
+      <option>TRANSPORTES HALCONES</option>
+      <option>TRANSPORTES ALÁMOS</option>
+      <option>TRANSPORTES MARQUENCITA</option>
+      <option>COMPRAS VARIAS</option>
+      <option>MARIACURI</option>
+      <option>HOSPITAL SAN VICENTE</option>
+      <option>HOSPITAL METROPOLITANO</option>
+    </select>
+    <label>Tipo de gestión</label>
+    <select class="p-tipo">
+      <option value="">Selecciona...</option>
+      <option>EVENTOS GUATECOMPRAS</option>
+      <option>ENTREGA DE PRODUCTO</option>
+      <option>CAMBIO DE PRODUCTO</option>
+      <option>TRANSFERENCIAS</option>
+      <option>RETORNO DE PRODUCTO</option>
+      <option>CONSIGNACIONES</option>
+      <option>ENTREGA DE GEN11</option>
+      <option>REFACCIÓN</option>
+      <option>ENTREGA DE DOCUMENTOS</option>
+      <option>ENTREGA MUESTRA</option>
+      <option>VISITA TÉCNICA</option>
+      <option>PAGO DE MULTA</option>
+      <option>COMPRAS VARIAS</option>
+      <option>REGALO</option>
+      <option>ORDENES DE COMPRA</option>
+      <option>RECOLECTA DE MUESTRAS</option>
+      <option>DEPÓSITO</option>
+      <option>RECOLECTA DE CHEQUES</option>
+      <option>ENTREGA DE FACTURA</option>
+      <option>ESTERILIZACIÓN DE PRODUCTO</option>
+      <option>APOYO ADMINISTRATIVO</option>
+    </select>
+    <label>Coordinación</label>
+    <select class="p-coord">
+      <option value="">Selecciona...</option>
+      <option>Cierre de Heridas</option>
+      <option>Videocirugía</option>
+      <option>Gastroenterología</option>
+      <option>Estela Capital</option>
+      <option>Control de Infecciones</option>
+      <option>Cuidado de Heridas</option>
+      <option>Gerencia / Coordinación Admin.</option>
+      <option>Diagnóstico por Imágenes</option>
+      <option>Cuidado de la Salud</option>
+    </select>
+  </div>
+</template>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxslgZ98MYCrALziVXbQLq-8xb18CRXRgvp-jEAq1o5lkb_vQ2j-_yY67Vl1yPmc8Lasw/exec';
+let paradaCount = 0, pilotoActual = '', kmInicialRef = 0;
+let dashData = null, chartsBuilt = {};
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-dashboard') cargarDashboard();
+}
+
+function switchTab(btn, tabId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['t-resumen','t-pilotos','t-tipos'].forEach(id=>{
+    document.getElementById(id).style.display = id===tabId?'block':'none';
+  });
+  if(tabId==='t-tipos' && !chartsBuilt[tabId]){ chartsBuilt[tabId]=true; cargarAnomalias(); }
+  else if(dashData && !chartsBuilt[tabId]) buildTab(tabId);
+}
+
+async function apiGet(params){
+  const url = API+'?'+new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function cargarDashboard(){
+  ['t-resumen','t-pilotos','t-tipos'].forEach(id=>{
+    document.getElementById(id).innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  });
+  chartsBuilt = {};
+  try {
+    const [hoy, mes] = await Promise.all([
+      apiGet({action:'getDashboard'}),
+      apiGet({action:'getResumenMes', mes: new Date().getMonth()+1, anio: new Date().getFullYear()})
+    ]);
+    dashData = {hoy, mes};
+    buildTab('t-resumen');
+  } catch(e){
+    document.getElementById('t-resumen').innerHTML='<div class="alert-box">Error conectando. <button onclick="cargarDashboard()" style="background:none;border:none;cursor:pointer;color:#C62828;font-weight:600;text-decoration:underline">Reintentar</button></div>';
+  }
+}
+
+function buildTab(tabId){
+  if(!dashData && tabId !== 't-tipos') return;
+  chartsBuilt[tabId] = true;
+  const d = dashData || {};
+
+  if(tabId==='t-resumen'){
+    const kmHoy = Math.round(d.kmHoy||0);
+    const kmMes = Math.round(d.kmMes||0);
+    const entHoy = d.entregasHoy||0;
+    const entMes = d.entregasMes||0;
+    const pilotos = d.pilotosActivos||0;
+    const coords = d.coordsHoy||{};
+    const entPilotoHoy = d.entregasPorPilotoHoy||{};
+    const pilotosNombres = Object.keys(entPilotoHoy);
+
+    let html='';
+    if(d.anomalias && d.anomalias.length>0){
+      d.anomalias.forEach(a=>{
+        html+=`<div class="alert-box"><strong>Anomalía:</strong> ${a.piloto} — ${a.ruta} registró ${a.kmRegistrado} km vs. promedio ${a.kmPromedio} km (+${a.diferenciaPct}%)</div>`;
+      });
+    }
+    html+=`<div class="metrics">
+      <div class="met"><div class="n">${pilotos}</div><div class="l">Pilotos activos hoy</div></div>
+      <div class="met"><div class="n">${kmHoy}</div><div class="l">Km totales hoy</div></div>
+      <div class="met"><div class="n">${kmMes}</div><div class="l">Km acumulados mes</div></div>
+      <div class="met"><div class="n">${entHoy}</div><div class="l">Entregas hoy</div></div>
+      <div class="met"><div class="n">${entMes}</div><div class="l">Gestiones mes</div></div>
+      <div class="met"><div class="n">${Object.keys(coords).length}</div><div class="l">Coordinaciones hoy</div></div>
+    </div>`;
+
+    // Coordinaciones del día
+    const cNombres = Object.keys(coords);
+    if(cNombres.length>0){
+      html+='<p class="sec-ttl">Coordinaciones activas hoy</p>';
+      cNombres.sort((a,b)=>coords[b]-coords[a]).forEach(c=>{
+        html+=`<div class="row-data"><span>${c}</span><strong>${coords[c]}</strong></div>`;
+      });
+    }
+
+    // Pie entregas por piloto
+    if(pilotosNombres.length>0){
+      html+=`<p class="sec-ttl" style="margin-top:1rem">Entregas por piloto — hoy</p>
+      <div class="legend">${pilotosNombres.map((p,i)=>`<span><span class="legend-dot" style="background:${['#378ADD','#1D9E75','#BA7517','#7F77DD'][i%4]}"></span>${p} (${entPilotoHoy[p]})</span>`).join('')}</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chart-pie-hoy" role="img" aria-label="Entregas por piloto hoy"></canvas></div>`;
+    }
+
+    html+='<button onclick="cargarDashboard()" class="btn btn-s" style="margin-top:1rem">Actualizar</button>';
+    document.getElementById('t-resumen').innerHTML=html;
+
+    if(pilotosNombres.length>0){
+      setTimeout(()=>{
+        const colores=['#378ADD','#1D9E75','#BA7517','#7F77DD'];
+        new Chart(document.getElementById('chart-pie-hoy'),{
+          type:'doughnut',
+          data:{labels:pilotosNombres,datasets:[{data:pilotosNombres.map(p=>entPilotoHoy[p]),backgroundColor:colores.slice(0,pilotosNombres.length),borderWidth:0}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+        });
+      },100);
+    }
+  }
+}
+
+async function cargarDetallePiloto(){
+  const piloto = document.getElementById('sel-piloto-dash').value;
+  if(!piloto) return;
+  const cont = document.getElementById('piloto-detalle');
+  cont.innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  try {
+    const mes = new Date().getMonth()+1;
+    const anio = new Date().getFullYear();
+    const data = await apiGet({action:'getPilotoDetalle', piloto, mes, anio});
+    const colores=['#378ADD','#1D9E75','#BA7517','#7F77DD','#D85A30','#D4537E','#888780','#0F6E56','#993C1D'];
+    const tNombres = Object.keys(data.tiposPiloto||{});
+    const cNombres = Object.keys(data.coordsPiloto||{});
+
+    let html=`<div class="metrics">
+      <div class="met"><div class="n">${data.kmHoy||0}</div><div class="l">Km hoy</div></div>
+      <div class="met"><div class="n">${data.kmMes||0}</div><div class="l">Km este mes</div></div>
+      <div class="met"><div class="n">${data.entregasHoy||0}</div><div class="l">Gestiones hoy</div></div>
+      <div class="met"><div class="n">${data.entregasMes||0}</div><div class="l">Gestiones mes</div></div>
+    </div>`;
+
+    if(tNombres.length>0){
+      html+=`<p class="sec-ttl">Tipos de gestión — este mes</p>
+      <div class="legend">${tNombres.slice(0,6).map((t,i)=>`<span><span class="legend-dot" style="background:${colores[i%colores.length]}"></span>${t} (${data.tiposPiloto[t]})</span>`).join('')}</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chart-tipos-p" role="img" aria-label="Tipos de gestión piloto"></canvas></div>`;
+    }
+    if(cNombres.length>0){
+      html+=`<p class="sec-ttl">Por coordinación — este mes</p>
+      <div class="chart-wrap" style="height:${Math.max(150,cNombres.length*44)}px"><canvas id="chart-coords-p" role="img" aria-label="Coordinaciones piloto"></canvas></div>`;
+    }
+    cont.innerHTML=html;
+    setTimeout(()=>{
+      if(tNombres.length>0){
+        new Chart(document.getElementById('chart-tipos-p'),{
+          type:'doughnut',
+          data:{labels:tNombres,datasets:[{data:tNombres.map(t=>data.tiposPiloto[t]),backgroundColor:colores.slice(0,tNombres.length),borderWidth:0}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+        });
+      }
+      if(cNombres.length>0){
+        new Chart(document.getElementById('chart-coords-p'),{
+          type:'bar',
+          data:{labels:cNombres,datasets:[{data:cNombres.map(c=>data.coordsPiloto[c]),backgroundColor:'#1D9E75',borderRadius:6}]},
+          options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888'},grid:{color:'#f0f0f0'}},y:{ticks:{color:'#555'},grid:{display:false}}}}
+        });
+      }
+    },100);
+  } catch(e){
+    cont.innerHTML='<div class="alert-box">Error cargando datos del piloto.</div>';
+  }
+}
+
+async function cargarAnomalias(){
+  const cont = document.getElementById('t-tipos');
+  cont.innerHTML='<div class="loading"><div class="spinner"></div>Analizando rutas históricas...</div>';
+  try {
+    const data = await apiGet({action:'getAnomalias'});
+    let html='<p class="sec-ttl" style="margin-top:0">Anomalías detectadas por ruta</p>';
+    if(!data.anomalias || data.anomalias.length===0){
+      html+='<p style="font-size:13px;color:#888;text-align:center;padding:2rem">Sin anomalías detectadas. Se necesitan mínimo 3 registros por ruta para comparar.</p>';
+    } else {
+      data.anomalias.forEach(a=>{
+        html+=`<div class="alert-box" style="margin-bottom:.5rem">
+          <strong>${a.ruta}</strong><br>
+          <span style="font-size:12px">Último registro: ${a.kmUltimo} km · Promedio histórico: ${a.kmPromedio} km · <strong>+${a.diferenciaPct}%</strong> · ${a.fecha}</span>
+        </div>`;
+      });
+    }
+    html+='<button onclick="cargarAnomalias()" class="btn btn-s" style="margin-top:.75rem">Actualizar</button>';
+    cont.innerHTML=html;
+  } catch(e){
+    cont.innerHTML='<div class="alert-box">Error cargando anomalías.</div>';
+  }
+}
+
+async function cargarPilotos(){
+  go('s-piloto-home');
+  try {
+    const data = await apiGet({action:'getPilotos'});
+    if(data.pilotos && data.pilotos.length>0){
+      const sel = document.getElementById('sel-piloto');
+      sel.innerHTML='<option value="">Selecciona tu nombre...</option>';
+      data.pilotos.forEach(p=>{
+        const opt=document.createElement('option');
+        opt.value=p.nombre; opt.textContent=p.nombre;
+        sel.appendChild(opt);
+      });
+    }
+  } catch(e){}
+}
+
+async function agregarPiloto(){
+  const nombre=document.getElementById('nuevo-piloto').value.trim();
+  if(!nombre){alert('Escribe el nombre');return;}
+  try{
+    await fetch(API,{method:'POST',body:JSON.stringify({action:'agregarPiloto',nombre})});
+    document.getElementById('nuevo-piloto').value='';
+    await cargarPilotos();
+    alert('Piloto agregado: '+nombre);
+  }catch(e){alert('Error al agregar');}
+}
+
+async function iniciarRuta(){
+  pilotoActual=document.getElementById('sel-piloto').value;
+  if(!pilotoActual){alert('Selecciona tu nombre');return;}
+  paradaCount=0;
+  ['paradas-container','km-ini','km-fin','hora-sal','comentarios'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value===undefined?el.innerHTML='':el.value='';
+  });
+  document.getElementById('km-calc').textContent='— km';
+  document.getElementById('titulo-ruta').textContent=pilotoActual.split(' ')[0];
+  document.getElementById('km-sug').textContent='Cargando...';
+  go('s-form-ruta');
+  agregarParada();
+  try{
+    const data=await apiGet({action:'getUltimoKm',piloto:pilotoActual});
+    kmInicialRef=data.ultimoKm||0;
+    document.getElementById('km-sug').textContent=kmInicialRef>0?kmInicialRef.toLocaleString():'Sin registro previo';
+  }catch(e){document.getElementById('km-sug').textContent='Sin registro previo';}
+}
+
+function agregarParada(){
+  paradaCount++;
+  const tpl=document.getElementById('tpl-parada').content.cloneNode(true);
+  tpl.querySelector('.p-num').textContent=paradaCount;
+  document.getElementById('paradas-container').appendChild(tpl);
+}
+
+function renumerar(){
+  document.querySelectorAll('.parada-card .p-num').forEach((el,i)=>el.textContent=i+1);
+  paradaCount=document.querySelectorAll('.parada-card').length;
+}
+
+function calcKm(){
+  const ini=parseInt(document.getElementById('km-ini').value)||kmInicialRef;
+  const fin=parseInt(document.getElementById('km-fin').value)||0;
+  const diff=fin-ini;
+  document.getElementById('km-calc').textContent=diff>0?Math.round(diff)+' km':'— km';
+}
+
+async function enviarRuta(){
+  const kmFin=document.getElementById('km-fin').value;
+  if(!kmFin){alert('Ingresa el kilometraje de regreso');return;}
+  const kmIni=parseInt(document.getElementById('km-ini').value)||kmInicialRef;
+  const paradas=[];
+  document.querySelectorAll('.parada-card').forEach(card=>{
+    paradas.push({
+      recoleccion:card.querySelector('.p-recol').value,
+      destinatario:card.querySelector('.p-dest').value,
+      tipoGestion:card.querySelector('.p-tipo').value,
+      coordinacion:card.querySelector('.p-coord').value
+    });
+  });
+  document.getElementById('enviando').style.display='block';
+  document.getElementById('btn-enviar').style.display='none';
+  try{
+    await fetch(API,{method:'POST',body:JSON.stringify({
+      action:'registrarRuta',piloto:pilotoActual,
+      kmInicial:kmIni,kmFinal:parseInt(kmFin),
+      horaSalida:document.getElementById('hora-sal').value,
+      comentarios:document.getElementById('comentarios').value,
+      paradas
+    })});
+    const km=Math.round(parseInt(kmFin)-kmIni);
+    document.getElementById('conf-km').textContent=km+' km recorridos · '+paradas.length+' parada(s)';
+    go('s-ok');
+  }catch(e){alert('Error al guardar. Verifica tu conexión.');}
+  finally{
+    document.getElementById('enviando').style.display='none';
+    document.getElementById('btn-enviar').style.display='block';
+  }
+}
+</script>
+</body>
+</html>
