@@ -361,19 +361,18 @@ function apiGet(params) {
 }
 
 async function cargarDashboard(){
-  ['t-resumen','t-pilotos','t-tipos'].forEach(id=>{
-    document.getElementById(id).innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
-  });
+  document.getElementById('t-resumen').innerHTML='<div class="loading"><div class="spinner"></div>Cargando datos...</div>';
   chartsBuilt = {};
   try {
-    const [hoy, mes] = await Promise.all([
-      apiGet({action:'getDashboard'}),
-      apiGet({action:'getResumenMes', mes: new Date().getMonth()+1, anio: new Date().getFullYear()})
-    ]);
+    const hoy = await apiGet({action:'getDashboard'});
+    console.log('hoy:', JSON.stringify(hoy));
+    const mes = await apiGet({action:'getResumenMes', mes: new Date().getMonth()+1, anio: new Date().getFullYear()});
+    console.log('mes:', JSON.stringify(mes));
     dashData = {hoy, mes};
     buildTab('t-resumen');
   } catch(e){
-    document.getElementById('t-resumen').innerHTML='<div class="alert-box">Error conectando. <button onclick="cargarDashboard()" style="background:none;border:none;cursor:pointer;color:#C62828;font-weight:600;text-decoration:underline">Reintentar</button></div>';
+    console.error('Error:', e);
+    document.getElementById('t-resumen').innerHTML='<div class="alert-box">Error: ' + e.message + '<br><button onclick="cargarDashboard()" style="background:none;border:none;cursor:pointer;color:#C62828;font-weight:600;text-decoration:underline;display:block;margin-top:8px">Reintentar</button></div>';
   }
 }
 
