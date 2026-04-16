@@ -379,7 +379,8 @@ async function cargarDashboard(){
 function buildTab(tabId){
   if(!dashData && tabId !== 't-tipos') return;
   chartsBuilt[tabId] = true;
-  const d = dashData || {};
+  const d = dashData.hoy || {};
+  const mes = dashData.mes || {};
 
   if(tabId==='t-resumen'){
     const kmHoy = Math.round(d.kmHoy||0);
@@ -406,7 +407,6 @@ function buildTab(tabId){
       <div class="met"><div class="n">${Object.keys(coords).length}</div><div class="l">Coordinaciones hoy</div></div>
     </div>`;
 
-    // Coordinaciones del día
     const cNombres = Object.keys(coords);
     if(cNombres.length>0){
       html+='<p class="sec-ttl">Coordinaciones activas hoy</p>';
@@ -415,20 +415,20 @@ function buildTab(tabId){
       });
     }
 
-    // Pie entregas por piloto
     if(pilotosNombres.length>0){
       html+=`<p class="sec-ttl" style="margin-top:1rem">Entregas por piloto — hoy</p>
       <div class="legend">${pilotosNombres.map((p,i)=>`<span><span class="legend-dot" style="background:${['#378ADD','#1D9E75','#BA7517','#7F77DD'][i%4]}"></span>${p} (${entPilotoHoy[p]})</span>`).join('')}</div>
       <div class="chart-wrap" style="height:200px"><canvas id="chart-pie-hoy" role="img" aria-label="Entregas por piloto hoy"></canvas></div>`;
     }
 
-    html+='<button onclick="cargarDashboard()" class="btn btn-s" style="margin-top:1rem">Actualizar</button>';
+    html+='<button onclick="cargarDashboard()" class="btn btn-s" style="margin-top:1rem">Actualizar datos</button>';
     document.getElementById('t-resumen').innerHTML=html;
 
     if(pilotosNombres.length>0){
       setTimeout(()=>{
         const colores=['#378ADD','#1D9E75','#BA7517','#7F77DD'];
-        new Chart(document.getElementById('chart-pie-hoy'),{
+        const canvas = document.getElementById('chart-pie-hoy');
+        if(canvas) new Chart(canvas,{
           type:'doughnut',
           data:{labels:pilotosNombres,datasets:[{data:pilotosNombres.map(p=>entPilotoHoy[p]),backgroundColor:colores.slice(0,pilotosNombres.length),borderWidth:0}]},
           options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
